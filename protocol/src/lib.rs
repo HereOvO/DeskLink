@@ -1,0 +1,168 @@
+use serde::{Deserialize, Serialize};
+
+pub const PROTOCOL_VERSION: u8 = 2;
+pub const DEFAULT_INPUT_PORT: u16 = 24801;
+pub const DEFAULT_CONTROL_PORT: u16 = 24800;
+pub const MAX_CONTROL_HANDSHAKE_BYTES: usize = 64 * 1024;
+
+pub fn token_fingerprint(token: &str) -> String {
+    let hash = token
+        .as_bytes()
+        .iter()
+        .fold(0xcbf29ce484222325u64, |hash, byte| {
+            (hash ^ *byte as u64).wrapping_mul(0x100000001b3)
+        });
+    format!("{hash:016x}")
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+pub enum InputEvent {
+    MouseMove { dx: i16, dy: i16 },
+    MouseButton { button: u8, pressed: bool },
+    MouseWheel { vertical: i16, horizontal: i16 },
+    Key { code: u16, pressed: bool },
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ScreenEdge {
+    Left,
+    Right,
+    Top,
+    Bottom,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum Packet {
+    Hello {
+        version: u8,
+        device_id: String,
+        token: String,
+        session: u64,
+    },
+    Input {
+        session: u64,
+        sequence: u32,
+        event: InputEvent,
+    },
+    Heartbeat {
+        session: u64,
+        timestamp_ms: u64,
+    },
+    ReleaseAll {
+        session: u64,
+    },
+    SetState {
+        session: u64,
+        remote: bool,
+    },
+    EnterRemote {
+        session: u64,
+        edge: ScreenEdge,
+        ratio: f32,
+        width: u32,
+        height: u32,
+    },
+    EdgeReturn {
+        session: u64,
+        edge: ScreenEdge,
+        ratio: f32,
+    },
+    Ack {
+        session: u64,
+    },
+    Reject {
+        session: u64,
+        reason: String,
+    },
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum ControlMessage {
+    Hello {
+        version: u8,
+        device_id: String,
+        token: String,
+    },
+    Ready,
+    Reject {
+        reason: String,
+    },
+    ClipboardText {
+        id: u64,
+        text: String,
+    },
+}
+
+pub fn encode_control(message: &ControlMessage) -> Result<Vec<u8>, bincode::Error> {
+    bincode::serialize(message)
+}
+
+pub fn decode_control(bytes: &[u8]) -> Result<ControlMessage, bincode::Error> {
+    bincode::deserialize(bytes)
+}
+
+pub fn encode(packet: &Packet) -> Result<Vec<u8>, bincode::Error> {
+    bincode::serialize(packet)
+}
+pub fn decode(bytes: &[u8]) -> Result<Packet, bincode::Error> {
+    bincode::deserialize(bytes)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn input_packet_round_trips() {
+        let packet = Packet::Input {
+            session: 42,
+            sequence: 7,
+            event: InputEvent::MouseMove { dx: -12, dy: 8 },
+        };
+        assert!(matches!(
+            decode(&encode(&packet).unwrap()).unwrap(),
+            Packet::Input {
+                session: 42,
+                sequence: 7,
+                ..
+            }
+        ));
+    }
+
+    #[test]
+    fn hello_packet_round_trips() {
+        let packet = Packet::Hello {
+            version: PROTOCOL_VERSION,
+            device_id: "windows-main".into(),
+            token: "test-token".into(),
+            session: 99,
+        };
+        assert!(matches!(
+            decode(&encode(&packet).unwrap()).unwrap(),
+            Packet::Hello { session: 99, .. }
+        ));
+    }
+
+    #[test]
+    fn token_fingerprint_is_stable() {
+        assert_eq!(
+            token_fingerprint("desklink-local"),
+            token_fingerprint("desklink-local")
+        );
+        assert_ne!(
+            token_fingerprint("desklink-local"),
+            token_fingerprint("different")
+        );
+    }
+
+    #[test]
+    fn clipboard_message_round_trips() {
+        let message = ControlMessage::ClipboardText {
+            id: 7,
+            text: "DeskLink 剪贴板".to_owned(),
+        };
+        assert!(matches!(
+            decode_control(&encode_control(&message).unwrap()).unwrap(),
+            ControlMessage::ClipboardText { id: 7, text } if text == "DeskLink 剪贴板"
+        ));
+    }
+}
