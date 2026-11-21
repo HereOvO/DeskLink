@@ -24,3 +24,6 @@ desklink.toml
 *.pdb
 *.ilk
 *.dSYM/
+
+# Windows 双机分发目录（含二进制，不提交）
+release-package/

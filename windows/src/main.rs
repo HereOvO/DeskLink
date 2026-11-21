@@ -380,7 +380,7 @@ async fn main() -> Result<()> {
         }
     });
     if windows_layout_changed {
-        warn!("Windows monitor layout changed; Linux screen placement was reset");
+        warn!("Windows monitor layout changed; remote screen placement was reset");
     }
     let socket = Arc::new(UdpSocket::bind("0.0.0.0:0").await?);
     let mut sender = InputSender {
@@ -442,7 +442,7 @@ async fn main() -> Result<()> {
                     live_config.save(&config_path)?;
                     *layout_state.write().await = new_layout;
                     edge_candidate = None;
-                    warn!("Windows monitor layout changed; saved Linux placement was reset");
+                    warn!("Windows monitor layout changed; saved remote placement was reset");
                 }
                 sender.hello(&token).await?;
                 let packet = Packet::Heartbeat { session: sender.session, timestamp_ms: now_ms() };
@@ -458,7 +458,7 @@ async fn main() -> Result<()> {
                         pending_dy = 0;
                         set_remote_input(false);
                         state = ControlState::Disconnected;
-                        warn!(timeout_ms = disconnect_timeout.as_millis(), "Linux client ACK timed out; local input restored");
+                        warn!(timeout_ms = disconnect_timeout.as_millis(), "remote client ACK timed out; local input restored");
                     }
                     connected = false;
                     reported_connected = false;
@@ -472,7 +472,7 @@ async fn main() -> Result<()> {
                             connected = true;
                             if !reported_connected {
                                 reported_connected = true;
-                                info!("Linux client acknowledged; connection ready");
+                                info!("remote client acknowledged; connection ready");
                             }
                         }
                         Packet::EdgeReturn { session, edge, ratio } if session == sender.session => {
@@ -493,7 +493,7 @@ async fn main() -> Result<()> {
                             connected = false;
                             set_remote_input(false);
                             state = ControlState::Disconnected;
-                            warn!(%reason, "Linux client rejected the connection");
+                            warn!(%reason, "remote client rejected the connection");
                         }
                         _ => {}
                     }
@@ -524,7 +524,7 @@ async fn main() -> Result<()> {
                                 set_remote_input(true);
                                 state = ControlState::Remote;
                                 edge_candidate = None;
-                                info!(?remote_edge, ratio, "cursor crossed into Linux");
+                                info!(?remote_edge, ratio, "cursor crossed into the remote screen");
                             }
                         }
                         None => edge_candidate = None,

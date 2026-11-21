@@ -1,5 +1,15 @@
 # DeskLink Changelog
 
+## 0.7.0
+
+- Add `desklink-windows-client`, a Windows client that injects host input with `SendInput` and serves the clipboard channel, enabling Windows -> Windows use of the existing host and protocol.
+- Place the cursor from the maintained logical cursor with absolute `SetCursorPos`, so pointer acceleration on the client cannot desynchronise the two sides.
+- Map evdev key codes back to Windows set-1 scan codes, including extended keys (arrows, navigation, Meta) and right-hand modifiers.
+- Release every held key and button when the session ends, the host times out, or the emergency hotkey fires.
+- Warn at startup when the client desktop size differs from the host's remote-screen box, and scale motion to the real virtual desktop.
+- Add `desklink-selftest` for end-to-end checks (auth, heartbeat, reject, enter, edge return, release, clipboard write) plus a `DESKLINK_DRY_RUN` mode that never injects input.
+- Neutralise Linux-specific wording in host logs and the layout page now that the remote endpoint can be Windows.
+
 ## 0.6.2
 
 - Avoid waiting forever on stderr pipes inherited by the long-lived `xclip`/`wl-copy` clipboard owner.

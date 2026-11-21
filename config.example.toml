@@ -1,15 +1,21 @@
 [network]
-# Windows Host sends input to this Linux address.
-target = "192.168.1.20:24801"
-# Linux Client listens on this address.
-bind = "0.0.0.0:24801"
+# --- Windows Host (desklink-windows.exe) ---
+# Address of the machine that receives input. For Windows -> Windows this is
+# the client PC. With a direct cable use the static address you gave it.
+target = "192.168.66.2:24801"
+# Local page used to drag the remote screen into place.
 ui_bind = "127.0.0.1:24802"
-# Reliable clipboard channel. Linux listens here; Windows uses target IP + control_port.
-control_bind = "0.0.0.0:24800"
+# Clipboard channel is reached at <target ip>:control_port.
 control_port = 24800
 
+# --- Windows Client (desklink-windows-client.exe) / Linux Client ---
+# Where input is received.
+bind = "0.0.0.0:24801"
+# Where the clipboard channel is served.
+control_bind = "0.0.0.0:24800"
+
 [security]
-# Set the same private token on both computers.
+# Must be identical on both machines.
 token = "replace-with-a-long-random-token"
 
 [performance]
@@ -25,9 +31,11 @@ poll_ms = 400
 max_bytes = 67108864
 
 [topology]
-# Place the Linux screen on this edge of the complete Windows virtual desktop.
+# Place the remote screen on this edge of the complete Windows virtual desktop.
 enabled = true
 edge = "right" # left, right, top or bottom
+# Size of the remote-screen box. Set it to the CLIENT desktop resolution: the
+# client prints its real desktop on startup, and a mismatch is logged there.
 remote_width = 1920
 remote_height = 1080
 # Set these through the localhost layout page, or enter logical desktop coordinates.

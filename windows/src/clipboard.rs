@@ -145,7 +145,7 @@ async fn connected_session(
     .await?;
     match read_message(&mut reader, MAX_CONTROL_HANDSHAKE_BYTES).await? {
         ControlMessage::Ready => {}
-        ControlMessage::Reject { reason } => bail!("Linux rejected clipboard channel: {reason}"),
+        ControlMessage::Reject { reason } => bail!("remote client rejected clipboard channel: {reason}"),
         _ => bail!("unexpected clipboard handshake response"),
     }
 
@@ -165,7 +165,7 @@ async fn connected_session(
                 },
             )
             .await?;
-            info!(id = next_id, "initial clipboard text sent to Linux");
+            info!(id = next_id, "initial clipboard text sent to remote client");
             next_id = next_id.wrapping_add(1);
         } else {
             warn!(
@@ -188,7 +188,7 @@ async fn connected_session(
                             continue;
                         }
                         write_message(&mut writer, &ControlMessage::ClipboardText { id: next_id, text }).await?;
-                        info!(id = next_id, "clipboard text sent to Linux");
+                        info!(id = next_id, "clipboard text sent to remote client");
                         next_id = next_id.wrapping_add(1);
                     }
                 }
@@ -202,7 +202,7 @@ async fn connected_session(
                             match write_text_with_retry(&text).await {
                                 Ok(()) => {
                                     last_text = Some(text);
-                                    info!("clipboard text received from Linux");
+                                    info!("clipboard text received from remote client");
                                 }
                                 Err(error) => {
                                     warn!(%error, "cannot write Windows clipboard; channel remains connected");

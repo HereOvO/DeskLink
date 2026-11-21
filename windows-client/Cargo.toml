@@ -1,0 +1,25 @@
+[package]
+name = "desklink-windows-client"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+desklink-protocol = { path = "../protocol" }
+desklink-config = { path = "../config" }
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+windows-sys = { version = "0.52", features = [
+    "Win32_Foundation",
+    "Win32_UI_Input_KeyboardAndMouse",
+    "Win32_UI_WindowsAndMessaging",
+    "Win32_UI_HiDpi",
+    "Win32_System_DataExchange",
+    "Win32_System_Memory",
+    "Win32_System_Ole",
+] }
+
+[[bin]]
+name = "desklink-selftest"
+path = "src/bin/selftest.rs"

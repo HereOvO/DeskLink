@@ -1,0 +1,18 @@
+# 被控端（另一台 Windows）: desklink-windows-client.exe
+[network]
+bind = "0.0.0.0:24801"
+control_bind = "0.0.0.0:24800"
+
+[security]
+token = "f3633c1bfa275a3d2d7512a2"
+
+[clipboard]
+enabled = true
+poll_ms = 400
+max_bytes = 67108864
+
+[topology]
+enabled = true
+edge = "right"
+remote_width = 1920
+remote_height = 1080

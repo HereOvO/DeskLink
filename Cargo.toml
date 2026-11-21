@@ -1,10 +1,10 @@
 [workspace]
-members = ["protocol", "config", "topology", "windows", "linux"]
+members = ["protocol", "config", "topology", "windows", "windows-client", "linux"]
 resolver = "2"
 
 [workspace.package]
 edition = "2021"
-version = "0.6.2"
+version = "0.7.0"
 license = "MIT"
 
 [workspace.dependencies]
