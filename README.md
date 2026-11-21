@@ -244,3 +244,7 @@ Get-NetTCPConnection -LocalPort 24800 -State Listen
 ```
 
 版本变化参见 [CHANGELOG.md](CHANGELOG.md)。Windows 双机部署步骤见 [docs/windows-to-windows.md](docs/windows-to-windows.md)。
+
+## 来源与许可
+
+本项目基于 [yuanzhechn/DeskLink](https://github.com/yuanzhechn/DeskLink) 0.6.2 修改而来：新增 windows-client（Windows 被控端）、Windows ↔ Windows 文档与自检工具，主机端只调整了与平台无关的日志和布局页文案，协议与端口保持兼容。上游与本仓库均以 MIT 许可发布，见 [LICENSE](LICENSE)。
