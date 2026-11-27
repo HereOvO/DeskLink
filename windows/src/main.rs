@@ -469,7 +469,21 @@ async fn main() -> Result<()> {
                     match packet {
                         Packet::Ack { session } if session == sender.session => {
                             last_ack = Some(Instant::now());
-                            connected = true;
+                            if !connected {
+                                // A drop that happened while we were in remote mode leaves
+                                // the state machine in Disconnected, and the edge entry only
+                                // fires from Local. Reset on reconnect, otherwise the cursor
+                                // can never cross to the remote screen again.
+                                if state != ControlState::Local {
+                                    set_remote_input(false);
+                                    state = ControlState::Local;
+                                    pending_dx = 0;
+                                    pending_dy = 0;
+                                    edge_candidate = None;
+                                    info!(?state, "connection restored; local control re-armed");
+                                }
+                                connected = true;
+                            }
                             if !reported_connected {
                                 reported_connected = true;
                                 info!("remote client acknowledged; connection ready");

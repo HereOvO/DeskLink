@@ -1,5 +1,10 @@
 # DeskLink Changelog
 
+## 0.7.1
+
+- Reset the host state machine to Local when the remote client reconnects. A drop that happened while remote left the host in Disconnected, and since edge entry only fires from Local, the cursor could never cross to the remote screen again until a monitor-layout change or a restart.
+- Log connection restored; local control re-armed when that recovery happens.
+
 ## 0.7.0
 
 - Add `desklink-windows-client`, a Windows client that injects host input with `SendInput` and serves the clipboard channel, enabling Windows -> Windows use of the existing host and protocol.
